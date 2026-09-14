@@ -176,14 +176,11 @@ int main(void) {
                 0
             );
         }
-        /**Schließt Client Socket nach der Bearbeitung der Anfrage.
-         */
+        /**Schließt Client Socket nach der Bearbeitung der Anfrage.*/
         closesocket(client_socket);
     }
 
-    /**
-     * Wenn While irgendwie auf 0 gesetzt wird, wird erneut aufgeräumt.
-     */
+    /** Wenn While irgendwie auf 0 gesetzt wird, wird erneut aufgeräumt.*/
     closesocket(server_socket);
     WSACleanup();
     return 0;
