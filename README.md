@@ -1,101 +1,112 @@
-# Webserver für Windows in C
+# Webserver für Windows in C und Python
 
-Einfacher HTTP-Webserver in C für Windows mithilfe der **Windows Winsock2 API**.
+Dieses Projekt enthält zwei einfache HTTP-Webserver:
 
-## Beschreibung
+- einen **C-Webserver mit Windows Winsock2**
+- einen **Python-Webserver mit FastAPI und Uvicorn**
 
-Dieses Projekt implementiert einen einfachen HTTP-Webserver in der Programmiersprache **C** mithilfe der **Windows Winsock2 API**.
+Beide Server können `index.html` ausliefern und Telefonnummern aus
+`telefon.txt` anhand eines Namens suchen.
 
-Der Webserver verwendet TCP über IPv4 und wartet dauerhaft auf eingehende Client-Verbindungen auf **Port 80**.
+## 1. Vergleich
 
-Der Server unterstützt aktuell zwei grundlegende Funktionen:
+| Eigenschaft | C | Python |
+|---|---|---|
+| Programmiersprache | C | Python |
+| Netzwerkbibliothek | Winsock2 | FastAPI / Uvicorn |
+| Protokoll | HTTP über TCP | HTTP über TCP |
+| IP-Version | IPv4 | IPv4 |
+| Host | `INADDR_ANY` | `127.0.0.1` |
+| Port | `80` | `8000` |
+| Parallelität | sequenziell | durch Uvicorn verwaltet |
+| HTTP-Parsing | manuell | FastAPI/Uvicorn |
+| HTML-Auslieferung | `send()` | `FileResponse` |
+| Telefonsuche | C-Dateiverarbeitung | Python-Dateiverarbeitung |
+| URL-Decodierung | nein | nicht manuell |
+| HTTPS | nein | nein |
 
-- Ausliefern der Datei `index.html`
-- Suchen einer Telefonnummer anhand eines Namens über einen HTTP-Parameter
+---
 
-Die Telefonnummern werden aus der Datei `telefon.txt` gelesen.
+## 2. Funktionen
 
-> **Hinweis:** Der Server ist speziell für Windows ausgelegt und verwendet die Windows-spezifische Winsock2-API. Eine direkte Verwendung unter Linux oder macOS ist mit diesem Code nicht möglich.
+| Funktion | C | Python |
+|---|---|---|
+| `index.html` ausliefern | ✓ | ✓ |
+| Telefonnummer suchen | ✓ | ✓ |
+| `telefon.txt` lesen | ✓ | ✓ |
+| Parameter `name` | ✓ | ✓ |
+| `200 OK` | ✓ | ✓ |
+| `404 Not Found` | ✓ | ✓ |
+| `400 Bad Request` | ✓ | ✓ |
+| IPv4 | ✓ | ✓ |
+| HTTP über TCP | ✓ | ✓ |
 
-## Funktionen
+---
 
-Der aktuelle Server bietet folgende Funktionen:
+## 3. Voraussetzungen
 
-- TCP-Socket über Winsock2
-- IPv4-Unterstützung
-- Verwendung von Port 80
-- Annahme eingehender Client-Verbindungen
-- Empfangen von HTTP-Anfragen
-- Ausgabe der empfangenen Anfrage in der Konsole
-- Auslieferung von `index.html`
-- HTTP-Status `200 OK` bei erfolgreicher Auslieferung
-- HTTP-Status `404 Not Found` bei nicht gefundenen Ressourcen
-- HTTP-Status `400 Bad Request` bei unbekannten Parametern
-- Suchen von Telefonnummern anhand eines Namens
-- Lesen der Telefonnummern aus `telefon.txt`
-- Schließen der Client-Verbindung nach der Antwort
-- Verarbeitung der Client-Anfragen nacheinander in einer Endlosschleife
+### C
 
-## Voraussetzungen
+- Windows
+- C-Compiler, z. B. Visual Studio oder GCC
+- Winsock2
+- `index.html`
+- `telefon.txt`
 
-Für die Ausführung werden benötigt:
+### Python
 
-- Windows-Betriebssystem
-- C-Compiler mit Winsock2-Unterstützung
-- Microsoft Visual C++ / Visual Studio
-- Eine Datei `index.html`
-- Eine Datei `telefon.txt`
-- Berechtigung zur Verwendung von Port 80
+- Windows
+- Python
+- FastAPI
+- Uvicorn
+- `index.html`
+- `telefon.txt`
 
-### Verwendete Bibliotheken
+Installation:
 
-Der Quellcode verwendet:
-
-```c
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <winsock2.h>
+```text
+pip install fastapi uvicorn
 ```
 
-Die Winsock2-Bibliothek wird über folgende Compiler-Anweisung eingebunden:
+Alternativ über `requirements.txt`:
 
-```c
-#pragma comment(lib, "ws2_32.lib")
+```text
+fastapi
+uvicorn
 ```
 
-Zusätzlich befindet sich am Anfang des Programms:
+Installation:
 
-```c
-#define _WINSOCK_DEPRECATED_NO_WARNINGS
+```text
+pip install -r requirements.txt
 ```
 
-Damit werden bestimmte Warnungen des Microsoft-C-Compilers bezüglich veralteter Winsock-Funktionen unterdrückt.
+---
 
-## Projektstruktur
+## 4. Projektstruktur
 
 ```text
 Projekt/
 ├── server.c
+├── server.py
 ├── index.html
 ├── telefon.txt
 └── README.md
 ```
 
-### Dateien
+| Datei | Funktion |
+|---|---|
+| `server.c` | C-Webserver |
+| `server.py` | Python-Webserver |
+| `index.html` | HTML-Datei |
+| `telefon.txt` | Namen und Telefonnummern |
+| `README.md` | Dokumentation |
 
-- `server.c` – Quellcode des Webservers
-- `index.html` – HTML-Datei, die über den Server ausgeliefert werden kann
-- `telefon.txt` – Datei mit Namen und Telefonnummern
-- `README.md` – Projektdokumentation
+---
 
-## Datei `telefon.txt`
+## 5. Telefondatei
 
-Die Datei `telefon.txt` enthält die Namen und Telefonnummern.
-
-Als Trennzeichen zwischen Name und Telefonnummer wird ein Semikolon (`;`) verwendet.
-
-Beispiel:
+Beide Server verwenden dasselbe Format:
 
 ```text
 Max Mustermann;0123456789
@@ -103,461 +114,429 @@ Erika Musterfrau;0987654321
 Peter Beispiel;01555123456
 ```
 
-Der Server liest die Datei bei jeder Suchanfrage erneut ein und sucht nach einer Zeile, deren Name exakt mit dem übergebenen Suchbegriff übereinstimmt.
+Das Semikolon trennt Name und Telefonnummer.
 
-Die Suche ist **case-sensitive**.
+Die Suche ist **exakt und case-sensitive**.
 
-Beispielsweise wird:
+---
 
-```text
-Max
+## 6. Netzwerk
+
+| Schritt | C | Python |
+|---|---|---|
+| Socket | `socket()` | Uvicorn |
+| Bindung | `bind()` | `host` / `port` |
+| Warten | `listen()` | Uvicorn |
+| Verbindung | `accept()` | Uvicorn |
+| Empfangen | `recv()` | FastAPI/Uvicorn |
+| Senden | `send()` | `Response` |
+| Schließen | `closesocket()` | Server übernimmt |
+
+### C
+
+Der C-Server verwendet:
+
+```c
+#define PORT 80
+#define BUFFER_SIZE 4096
 ```
 
-nicht automatisch als gleichwertig zu:
+Für Winsock2:
 
-```text
-max
+```c
+#include <winsock2.h>
+#pragma comment(lib, "ws2_32.lib")
 ```
 
-behandelt.
+Der Server bindet an:
 
-## Kompilieren
+```text
+INADDR_ANY:80
+```
 
-Bei Verwendung der **Visual Studio Developer Command Prompt** kann das Programm beispielsweise mit folgendem Befehl kompiliert werden:
+Dadurch kann er grundsätzlich über die verfügbaren IPv4-Schnittstellen erreichbar sein.
+
+### Python
+
+Der Python-Server verwendet:
+
+```python
+uvicorn.run(
+    app,
+    host="127.0.0.1",
+    port=8000
+)
+```
+
+Dadurch ist er standardmäßig nur lokal erreichbar.
+
+---
+
+## 7. Starten
+
+### C
+
+Kompilieren mit Visual Studio:
 
 ```text
 cl server.c
 ```
-Sollte dies nicht installiert sein, geht alternativ auch gcc:
+
+Alternativ mit GCC:
 
 ```text
 gcc server.c -o server.exe -lws2_32
 ```
 
-Durch
-
-```c
-#pragma comment(lib, "ws2_32.lib")
-```
-
-wird die benötigte Winsock2-Bibliothek automatisch eingebunden.
-
-Anschließend kann der Server gestartet werden:
+Start:
 
 ```text
 .\server.exe
 ```
 
-## Starten des Servers
+Der Server verwendet Port `80`.
 
-Nach dem Start versucht der Server, den TCP-Port `80` zu verwenden.
+### Python
 
-Bei erfolgreichem Start wird folgende Meldung ausgegeben:
-
-```text
-Webserver laeuft auf Port 80...
-```
-
-Der Server wartet anschließend dauerhaft auf Client-Verbindungen.
-
-Da der Server an `INADDR_ANY` gebunden wird, akzeptiert er Verbindungen über die verfügbaren IPv4-Netzwerkschnittstellen des Rechners und nicht ausschließlich über `localhost`.
-
-## Auslieferung von `index.html`
-
-Wird folgende URL aufgerufen:
+Start über Python:
 
 ```text
-http://localhost/index.html
+python server.py
 ```
 
-versucht der Server, die Datei `index.html` im aktuellen Arbeitsverzeichnis zu öffnen.
-
-Wenn die Datei gefunden wird, wird ihr Inhalt mit einer HTTP-Antwort mit dem Status:
+oder direkt über Uvicorn:
 
 ```text
-HTTP/1.1 200 OK
+uvicorn server:app --host 127.0.0.1 --port 8000
 ```
 
-zurückgegeben.
+Der Server verwendet Port `8000`.
 
-Beispielsweise enthält die Antwort:
+---
+
+## 8. URLs
+
+| Funktion | C | Python |
+|---|---|---|
+| Startseite | `http://localhost/` | `http://localhost:8000/` |
+| HTML | `http://localhost/index.html` | `http://localhost:8000/index.html` |
+| Suche | `http://localhost/?name=Max` | `http://localhost:8000/?name=Max` |
+
+Der einzige grundlegende Unterschied bei den URLs ist der verwendete Port:
 
 ```text
-HTTP/1.1 200 OK
-Content-Type: text/html
-Content-Length: ...
-Connection: close
+C       → Port 80
+Python  → Port 8000
 ```
 
-Danach folgt der Inhalt der HTML-Datei.
+---
 
-### Datei nicht vorhanden
+## 9. Auslieferung von `index.html`
 
-Wenn `index.html` nicht geöffnet werden kann, sendet der Server eine:
+| C | Python |
+|---|---|
+| Datei mit `fopen()` öffnen | `FileResponse` |
+| Datei mit `fread()` lesen | FastAPI/Starlette |
+| HTTP-Header selbst erzeugen | Framework |
+| Antwort mit `send()` senden | Response zurückgeben |
+
+Python:
+
+```python
+@app.get("/index.html")
+def index():
+    if not INDEX_DATEI.exists():
+        return Response(
+            content="index.html nicht gefunden",
+            status_code=404,
+            media_type="text/plain"
+        )
+
+    return FileResponse(
+        INDEX_DATEI,
+        media_type="text/html"
+    )
+```
+
+---
+
+## 10. Telefonsuche
+
+Eine Suchanfrage sieht bei beiden Servern so aus:
 
 ```text
-HTTP/1.1 404 Not Found
+/?name=Max
 ```
 
-Antwort.
-
-## Telefonnummernsuche
-
-Neben der Auslieferung von `index.html` unterstützt der Server eine Suche nach Telefonnummern über einen URL-Parameter.
-
-Die Suchanfrage verwendet den Parameter:
-
-```text
-name
-```
-
-Beispielsweise:
-
-```text
-http://localhost/?name=Max
-```
-
-Der Server sucht anschließend in `telefon.txt` nach einem passenden Eintrag.
-
-Beispielsweise:
+Bei folgender Zeile:
 
 ```text
 Max;0123456789
 ```
 
-Wenn der Name gefunden wird, wird die Telefonnummer als Text zurückgegeben.
-
-Beispielantwort:
+wird zurückgegeben:
 
 ```text
-HTTP/1.1 200 OK
-Content-Type: text/plain
-Content-Length: 10
-Connection: close
-
 0123456789
 ```
 
-## Verhalten bei der Namenssuche
+### Umsetzung
 
-Wird der Name gefunden, antwortet der Server mit:
+| C | Python |
+|---|---|
+| HTTP-Anfrage selbst analysieren | FastAPI/Uvicorn verarbeitet HTTP |
+| Parameter selbst extrahieren | `request.url.query` |
+| `fopen()` | `open()` |
+| `fgets()` | `for zeile in file` |
+| C-Stringvergleich | Python-Stringvergleich |
+| `send()` | `Response` |
+
+Die grundlegende Logik ist identisch:
 
 ```text
-HTTP/1.1 200 OK
+Name
+ ↓
+telefon.txt
+ ↓
+Name gefunden?
+ ↓
+Telefonnummer
 ```
 
-Wird der Name nicht gefunden, antwortet der Server mit:
+---
+
+## 11. HTTP-Statuscodes
+
+| Situation | C | Python |
+|---|---|---|
+| HTML erfolgreich | `200 OK` | `200 OK` |
+| Name gefunden | `200 OK` | `200 OK` |
+| Datei nicht gefunden | `404 Not Found` | `404 Not Found` |
+| Name nicht gefunden | `404 Not Found` | `404 Not Found` |
+| Keine Suchanfrage | `404 Not Found` | `404 Not Found` |
+| Unbekannter Parameter | `400 Bad Request` | `400 Bad Request` |
+
+Beispiel für einen unbekannten Namen:
 
 ```text
-HTTP/1.1 404 Not Found
+GET /?name=Unbekannt
 ```
 
-und dem Text:
+Antwort:
 
 ```text
+404 Not Found
+
 Name nicht gefunden
 ```
 
-Wenn `telefon.txt` nicht geöffnet werden kann, gibt der Server zusätzlich eine Fehlermeldung in der Konsole aus:
+Unbekannter Parameter:
 
 ```text
-Fehler: telefon.txt konnte nicht geoeffnet werden.
+GET /?telefon=Max
 ```
 
-## HTTP-Parameter
-
-Der Server erwartet bei einer Suchanfrage den Parameter:
+Antwort:
 
 ```text
-name
-```
+400 Bad Request
 
-Beispiel:
-
-```text
-/?name=Max
-```
-
-Intern wird die Anfrage in ihre Bestandteile aufgeteilt:
-
-```text
-Parametername: name
-Parameterwert: Max
-```
-
-Wenn ein anderer Parameter verwendet wird, beispielsweise:
-
-```text
-/?telefon=Max
-```
-
-antwortet der Server mit:
-
-```text
-HTTP/1.1 400 Bad Request
-```
-
-und:
-
-```text
 Unbekannter Parameter
 ```
 
-## URL-Verarbeitung
+---
 
-Der Server verarbeitet die URL vereinfacht direkt aus dem empfangenen HTTP-Request.
+## 12. Dateipfade
 
-Zunächst wird davon ausgegangen, dass die Anfrage mit:
+Python verwendet:
+
+```python
+from pathlib import Path
+
+BASE_DIR = Path(__file__).resolve().parent
+
+TELEFON_DATEI = BASE_DIR / "telefon.txt"
+INDEX_DATEI = BASE_DIR / "index.html"
+```
+
+Dadurch werden die Dateien relativ zum Speicherort von `server.py` gefunden.
+
+| | C | Python |
+|---|---|---|
+| `index.html` | `index.html` | `BASE_DIR / "index.html"` |
+| `telefon.txt` | `telefon.txt` | `BASE_DIR / "telefon.txt"` |
+| Bezugspunkt | Arbeitsverzeichnis | Speicherort von `server.py` |
+
+---
+
+## 13. HTTP-Verarbeitung
+
+### C
+
+Der C-Server erhält die rohe HTTP-Anfrage:
 
 ```text
-GET 
+GET /?name=Max HTTP/1.1
+Host: localhost
+...
 ```
 
-beginnt.
-
-Anschließend wird die URL bis zum nächsten Leerzeichen extrahiert.
-
-Danach wird geprüft, ob die URL ein Fragezeichen (`?`) enthält.
-
-Beispiel:
+Diese wird selbst verarbeitet:
 
 ```text
-/index.html
+recv()
+ ↓
+HTTP-Text
+ ↓
+URL analysieren
+ ↓
+Parameter auswerten
+ ↓
+Antwort erzeugen
+ ↓
+send()
 ```
 
-enthält keinen Parameter.
+### Python
 
-Dagegen:
+FastAPI und Uvicorn übernehmen die grundlegende HTTP-Verarbeitung:
 
 ```text
-/?name=Max
+HTTP-Anfrage
+ ↓
+Uvicorn
+ ↓
+FastAPI
+ ↓
+Route
+ ↓
+Python-Code
+ ↓
+Response
 ```
 
-enthält einen Query-Parameter.
+Dadurch ist der Python-Code deutlich kürzer.
 
-Der aktuelle Code führt dabei keine vollständige HTTP-Parser-Implementierung durch.
+---
 
-## Ablauf des Servers
+## 14. Parallelität
 
-Der grundlegende Ablauf des Programms ist:
+### C
 
-1. `WSAStartup()` initialisiert Winsock.
-2. Mit `socket()` wird ein TCP-Socket erstellt.
-3. Die Serveradresse wird konfiguriert.
-4. Der Socket wird mit `bind()` an Port 80 gebunden.
-5. Mit `listen()` wird auf eingehende Verbindungen gewartet.
-6. Mit `accept()` wird eine Client-Verbindung angenommen.
-7. Mit `recv()` wird die HTTP-Anfrage empfangen.
-8. Die Anfrage wird in der Konsole ausgegeben.
-9. Die angeforderte URL wird aus der Anfrage extrahiert.
-10. Es wird geprüft, ob die URL einen Query-Parameter enthält.
-11. Bei `/index.html` wird die Datei `index.html` geöffnet und übertragen.
-12. Bei einem `name`-Parameter wird `telefon.txt` durchsucht.
-13. Je nach Ergebnis wird eine HTTP-Antwort mit `200`, `404` oder `400` gesendet.
-14. Die Client-Verbindung wird mit `closesocket()` geschlossen.
-15. Der Server wartet auf die nächste Verbindung.
-
-Der Server läuft dabei dauerhaft in einer Endlosschleife.
-
-## Wichtige Konstanten
-
-### `PORT`
-
-```c
-#define PORT 80
-```
-
-Legt den TCP-Port fest, auf dem der Server auf eingehende Verbindungen wartet.
-
-Port 80 ist der Standardport für HTTP.
-
-### `BUFFER_SIZE`
-
-```c
-#define BUFFER_SIZE 4096
-```
-
-Legt die Größe verschiedener verwendeter Puffer auf 4096 Bytes fest.
-
-Dadurch ergeben sich unter anderem folgende Begrenzungen:
-
-- HTTP-Anfragen können nur begrenzt empfangen werden.
-- Der Inhalt von `index.html` wird nur bis zur Größe des verwendeten Puffers eingelesen.
-- Eine einzelne Zeile aus `telefon.txt` ist ebenfalls auf die Puffergröße begrenzt.
-
-## HTTP-Statuscodes
-
-Der Server verwendet aktuell folgende HTTP-Statuscodes:
-
-### `200 OK`
-
-Wird verwendet, wenn:
-
-- `index.html` erfolgreich gelesen wurde oder
-- ein gesuchter Name in `telefon.txt` gefunden wurde.
-
-### `404 Not Found`
-
-Wird verwendet, wenn:
-
-- `index.html` nicht gefunden werden kann,
-- eine unbekannte URL ohne Suchparameter angefordert wird oder
-- der gesuchte Name nicht in `telefon.txt` vorhanden ist.
-
-### `400 Bad Request`
-
-Wird verwendet, wenn ein unbekannter Parameter angegeben wird.
-
-Beispielsweise:
+Der Server verarbeitet Verbindungen nacheinander:
 
 ```text
-/?telefon=Max
+Client 1
+   ↓
+Verarbeitung
+   ↓
+Antwort
+   ↓
+Client 2
+   ↓
+Verarbeitung
 ```
 
-führt zu:
+### Python
 
-```text
-HTTP/1.1 400 Bad Request
+Uvicorn/FastAPI übernimmt die Verwaltung der HTTP-Verbindungen.
+
+Die Telefonsuche selbst bleibt jedoch eine normale Dateisuche:
+
+```python
+def telefonnummer_suchen(gesuchter_name):
+    ...
 ```
 
-## Einschränkungen
+---
 
-Der Webserver ist bewusst einfach gehalten und dient hauptsächlich zum Verständnis der grundlegenden Funktionsweise von TCP, HTTP und Client-Server-Kommunikation.
+## 15. Unterschiede bei der Implementierung
 
-Aktuell bestehen unter anderem folgende Einschränkungen:
+| Bereich | C | Python |
+|---|---|---|
+| Netzwerk | Low-Level | Framework |
+| Socket-Verwaltung | selbst | Uvicorn |
+| HTTP-Parsing | selbst | FastAPI/Uvicorn |
+| Routing | selbst | FastAPI |
+| Dateizugriff | C-Standardbibliothek | Python |
+| Antworten | `send()` | `Response` |
+| Fehlerbehandlung | größtenteils selbst | teilweise Framework |
+| Codeumfang | größer | kleiner |
+| Kontrolle | sehr hoch | höheres Abstraktionsniveau |
+| Lernschwerpunkt | TCP/HTTP/Winsock | Webframework/API |
 
-- Nur Windows wird unterstützt.
-- IPv4 wird verwendet.
-- Es wird Port 80 verwendet.
-- Es werden keine parallelen Client-Verbindungen verarbeitet.
-- Der Server bearbeitet Verbindungen nacheinander.
-- HTTPS wird nicht unterstützt.
-- Es gibt keine Authentifizierung.
-- Es findet keine vollständige HTTP-Header-Verarbeitung statt.
-- Die HTTP-Methode wird nicht vollständig überprüft.
-- Es wird keine vollständige HTTP-Syntaxprüfung durchgeführt.
-- URL-Encoding wird nicht dekodiert.
-- Es werden keine komplexen Query-Parameter unterstützt.
-- Die Namenssuche ist case-sensitive.
-- Die Datei `telefon.txt` wird für jede Suchanfrage erneut geöffnet und vollständig durchsucht.
-- Die Größe der verarbeiteten HTTP-Anfrage ist durch `BUFFER_SIZE` begrenzt.
-- Der Inhalt von `index.html` ist durch den verwendeten Puffer begrenzt.
-- `index.html` wird über `%s` als Text verarbeitet und ist daher nicht für beliebige Binärdateien geeignet.
-- Fehler von `send()` und `fread()` werden nicht vollständig behandelt.
-- Es wird keine URL-Decodierung durchgeführt.
-- Der Server bindet an `INADDR_ANY` und kann dadurch über andere IPv4-Netzwerkschnittstellen erreichbar sein.
-- Es gibt keine Protokollierung in eine Datei.
+---
 
-> **Wichtig:** Aufgrund der einfachen Implementierung sollte der Server nicht als produktiver oder öffentlich erreichbarer Webserver eingesetzt werden.
+## 16. Einschränkungen
 
-## Fehlerbehandlung
+| C | Python |
+|---|---|
+| Windows-spezifisch | Python/FastAPI |
+| einfache HTTP-Verarbeitung | vereinfachte Query-Verarbeitung |
+| keine HTTPS-Unterstützung | keine HTTPS-Unterstützung |
+| sequenzielle Verarbeitung | Server verwaltet mehrere Verbindungen |
+| keine Authentifizierung | keine Authentifizierung |
+| keine Datenbank | keine Datenbank |
+| keine URL-Decodierung | keine eigene URL-Decodierung |
+| begrenzter Puffer | keine eigene `BUFFER_SIZE` |
+| einfache Fehlerbehandlung | Framework übernimmt Teile davon |
+| nicht für Produktion | nicht für Produktion |
 
-Der Code überprüft wichtige Fehler beim Start des Servers.
+---
 
-Beispielsweise werden Fehler bei folgenden Funktionen behandelt:
+## 17. Bekannte Besonderheit im Python-Code
 
-```c
-WSAStartup()
-socket()
-bind()
-listen()
-accept()
+Bei einer fehlenden `index.html` sollte `Content-Length` nicht fest eingetragen werden.
+
+Ungünstig:
+
+```python
+"Content-Length": "23"
 ```
 
-Bei einem Fehler beim Start wird der Socket geschlossen und Winsock mit:
+Besser:
 
-```c
-WSACleanup();
+```python
+"Content-Length": str(
+    len(response_body.encode("utf-8"))
+)
 ```
 
-bereinigt.
+So wird die tatsächliche Byte-Länge des UTF-8-Inhalts verwendet.
 
-Bei einer ungültigen Client-Verbindung wird die entsprechende Verbindung geschlossen und der Server wartet anschließend auf die nächste Verbindung.
+---
 
-## Netzwerkaufbau
+## 18. Ablauf beider Server
 
-Der Server verwendet:
+| Schritt | C | Python |
+|---|---|---|
+| 1 | Winsock initialisieren | FastAPI erstellen |
+| 2 | Socket erstellen | Uvicorn starten |
+| 3 | `bind()` | auf `127.0.0.1:8000` lauschen |
+| 4 | `listen()` | Anfrage empfangen |
+| 5 | `accept()` | Route bestimmen |
+| 6 | `recv()` | Request verarbeiten |
+| 7 | HTTP selbst analysieren | FastAPI verarbeitet HTTP |
+| 8 | Datei suchen | Datei suchen |
+| 9 | `send()` | Response |
+| 10 | `closesocket()` | Verbindung verwalten |
 
-```c
-AF_INET
-```
+---
 
-für IPv4 und:
+## 19. Fazit
 
-```c
-SOCK_STREAM
-```
+Beide Server erfüllen grundsätzlich dieselben Aufgaben, unterscheiden sich aber beim Abstraktionsgrad.
 
-für eine TCP-Verbindung.
+Der **C-Server** arbeitet direkt mit Winsock2. Dadurch werden TCP-Sockets, HTTP-Anfragen und HTTP-Antworten weitgehend selbst verarbeitet. Er eignet sich besonders zum Verständnis der grundlegenden Netzwerkprogrammierung.
 
-Das verwendete Protokoll ist:
+Der **Python-Server** verwendet FastAPI und Uvicorn. Netzwerkkommunikation, HTTP-Parsing und Routing werden weitgehend von den Bibliotheken übernommen. Dadurch ist die Implementierung kürzer und übersichtlicher.
 
-```c
-IPPROTO_TCP
-```
+| C | Python |
+|---|---|
+| Low-Level | High-Level |
+| mehr eigener Code | weniger eigener Code |
+| mehr Kontrolle | mehr Abstraktion |
+| Winsock2 direkt | FastAPI/Uvicorn |
+| gut zum Lernen von TCP/HTTP | gut zum Lernen moderner Webentwicklung |
 
-Die Serveradresse wird mit:
-
-```c
-INADDR_ANY
-```
-
-konfiguriert.
-
-Dadurch lauscht der Server auf allen verfügbaren IPv4-Netzwerkschnittstellen des Rechners.
-
-## Verwendete Technologien
-
-- **C**
-- **TCP/IP**
-- **HTTP**
-- **Windows Winsock2**
-- **IPv4**
-- **Microsoft Visual C++**
-- **Dateiverarbeitung mit der C-Standardbibliothek**
-
-## Ziel des Projekts
-
-Das Projekt dient dazu, grundlegende Konzepte der Netzwerkprogrammierung und der Client-Server-Kommunikation praktisch umzusetzen.
-
-Dabei werden unter anderem folgende Konzepte behandelt:
-
-- Erstellen eines TCP-Sockets
-- Initialisieren von Winsock
-- Konfigurieren einer Serveradresse
-- Binden eines Sockets an einen Port
-- Warten auf eingehende Verbindungen
-- Akzeptieren von Client-Verbindungen
-- Empfangen von Netzwerkdaten
-- Verarbeiten einfacher HTTP-Anfragen
-- Erstellen von HTTP-Antworten
-- Senden von Daten an einen Client
-- Lesen von Dateien
-- Suchen in einer Textdatei
-- Verarbeitung von URL-Parametern
-- Verwendung von HTTP-Statuscodes
-- Schließen von Netzwerkverbindungen
-- Grundlegende Fehlerbehandlung
-
-## Sicherheitshinweis
-
-Der Server wurde zu Lern- und Demonstrationszwecken entwickelt.
-
-Es fehlen zahlreiche Funktionen, die für einen produktiven Webserver notwendig wären, beispielsweise:
-
-- robuste HTTP-Parsing-Logik
-- vollständige Validierung von Anfragen
-- URL-Decodierung
-- Behandlung großer Dateien
-- parallele Verbindungen
-- vollständige Fehlerbehandlung
-- Sicherheitsprüfungen
-- HTTPS/TLS
-- Schutz vor manipulierten Anfragen
-- Logging und Monitoring
-
-Der Server sollte daher nur in einer kontrollierten Entwicklungs- oder Testumgebung eingesetzt werden.
-
-## Lizenz
-
-Dieses Projekt wurde zu Lern- und Demonstrationszwecken erstellt.
+Beide Implementierungen sind als Lern- und Demonstrationsprojekte gedacht und sollten nicht unverändert als öffentlich erreichbare Produktionsserver eingesetzt werden.
